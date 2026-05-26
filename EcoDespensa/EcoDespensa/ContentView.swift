@@ -136,8 +136,11 @@ struct OpenFoodFactsProduct: Codable {
     let product_name: String?
     let quantity: String?
     let categories: String?
+<<<<<<< HEAD
     let categories_tags: [String]?
     let food_groups_tags: [String]?
+=======
+>>>>>>> 3cdee79b2f34a087b51dbe179a2c309789a65550
 }
 
 // MARK: - HOME
@@ -153,6 +156,22 @@ struct HomeView: View {
                         .frame(height: UIScreen.main.bounds.height * 0.42)
 
                     VStack(spacing: 5) {
+<<<<<<< HEAD
+=======
+                        HStack {
+                            Spacer()
+                            HStack(spacing: 10) {
+                                Image(systemName: "line.3.horizontal")
+                                    .font(.system(size: 15, weight: .bold))
+                                    .foregroundColor(Color(hex: "#2E7D32"))
+
+                                Image(systemName: "gearshape")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(Color(hex: "#2E7D32"))
+                            }
+                            .padding(.trailing, 10)
+                        }
+>>>>>>> 3cdee79b2f34a087b51dbe179a2c309789a65550
 
                         Text("EcoDespensa")
                             .font(.custom("Times New Roman", size: UIScreen.main.bounds.width * 0.12))
@@ -161,7 +180,11 @@ struct HomeView: View {
 
                         Spacer()
                     }
+<<<<<<< HEAD
                     .frame(height: 320)
+=======
+                    .frame(height: 350)
+>>>>>>> 3cdee79b2f34a087b51dbe179a2c309789a65550
 
                     Circle()
                         .fill(Color.white)
@@ -544,6 +567,7 @@ struct VistaEscanearProducto: View {
     ]
 
     var codigoValido: Bool {
+<<<<<<< HEAD
         if codigoEscaneado.isEmpty {
             return true
         }
@@ -554,6 +578,9 @@ struct VistaEscanearProducto: View {
                longitud == 12 ||
                longitud == 13 ||
                longitud == 14
+=======
+        codigoEscaneado.isEmpty || codigoEscaneado.count == 13
+>>>>>>> 3cdee79b2f34a087b51dbe179a2c309789a65550
     }
 
     var formularioValido: Bool {
@@ -601,7 +628,11 @@ struct VistaEscanearProducto: View {
                                     Text("Toca para escanear")
                                         .foregroundColor(.white)
 
+<<<<<<< HEAD
                                     Text("Compatible con EAN-8, UPC-A, EAN-13 y GTIN-14")
+=======
+                                    Text("Solo códigos EAN-13")
+>>>>>>> 3cdee79b2f34a087b51dbe179a2c309789a65550
                                         .font(.system(size: 12))
                                         .foregroundColor(.gray)
                                 }
@@ -732,7 +763,11 @@ struct VistaEscanearProducto: View {
                                     .keyboardType(.numberPad)
                                     .onChange(of: codigoEscaneado) { _, nuevoValor in
                                         let soloNumeros = nuevoValor.filter { $0.isNumber }
+<<<<<<< HEAD
                                         codigoEscaneado = String(soloNumeros.prefix(14))
+=======
+                                        codigoEscaneado = String(soloNumeros.prefix(13))
+>>>>>>> 3cdee79b2f34a087b51dbe179a2c309789a65550
                                     }
 
                                 if !codigoValido {
@@ -780,7 +815,11 @@ struct VistaEscanearProducto: View {
         .sheet(isPresented: $mostrarScanner) {
             BarcodeScannerView { codigo in
                 let soloNumeros = codigo.filter { $0.isNumber }
+<<<<<<< HEAD
                 codigoEscaneado = soloNumeros
+=======
+                codigoEscaneado = String(soloNumeros.prefix(13))
+>>>>>>> 3cdee79b2f34a087b51dbe179a2c309789a65550
                 mostrarScanner = false
 
                 Task {
@@ -802,6 +841,7 @@ struct VistaEscanearProducto: View {
             }
         }
     }
+<<<<<<< HEAD
     
     func esProductoDeComida(_ producto: OpenFoodFactsProduct) -> Bool {
         let categorias = producto.categories?.lowercased() ?? ""
@@ -825,6 +865,8 @@ struct VistaEscanearProducto: View {
 
         return palabrasComida.contains { textoCompleto.contains($0) }
     }
+=======
+>>>>>>> 3cdee79b2f34a087b51dbe179a2c309789a65550
 
     func guardarProducto() {
         guard formularioValido else { return }
@@ -851,12 +893,16 @@ struct VistaEscanearProducto: View {
     }
     
     func buscarProductoPorCodigo(_ codigo: String) async {
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3cdee79b2f34a087b51dbe179a2c309789a65550
         guard !codigo.isEmpty else { return }
 
         buscandoProducto = true
         mensajeAPI = "Buscando producto..."
 
+<<<<<<< HEAD
         let urls = [
 
             "https://mx.openfoodfacts.org/api/v2/product/\(codigo).json?fields=product_name,brands,quantity,categories,categories_tags,food_groups_tags",
@@ -917,6 +963,47 @@ struct VistaEscanearProducto: View {
         await MainActor.run {
             buscandoProducto = false
             mensajeAPI = "⚠️ Producto no encontrado."
+=======
+        let urlTexto = "https://world.openfoodfacts.org/api/v2/product/\(codigo).json?fields=product_name,quantity,categories"
+
+        guard let url = URL(string: urlTexto) else {
+            buscandoProducto = false
+            mensajeAPI = "No se pudo crear la URL."
+            return
+        }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let respuesta = try JSONDecoder().decode(OpenFoodFactsResponse.self, from: data)
+
+            await MainActor.run {
+                buscandoProducto = false
+
+                guard respuesta.status == 1, let producto = respuesta.product else {
+                    mensajeAPI = "No se encontró información del producto."
+                    return
+                }
+
+                if let nombreAPI = producto.product_name, !nombreAPI.isEmpty {
+                    nombre = nombreAPI
+                }
+
+                if let cantidadAPI = producto.quantity, !cantidadAPI.isEmpty {
+                    separarCantidadDesdeAPI(cantidadAPI)
+                }
+
+                if let categoriasAPI = producto.categories, !categoriasAPI.isEmpty {
+                    categoria = convertirCategoriaAPI(categoriasAPI)
+                }
+
+                mensajeAPI = "Datos cargados automáticamente. Revisa antes de guardar."
+            }
+        } catch {
+            await MainActor.run {
+                buscandoProducto = false
+                mensajeAPI = "No se pudo consultar el producto."
+            }
+>>>>>>> 3cdee79b2f34a087b51dbe179a2c309789a65550
         }
     }
     
@@ -1762,6 +1849,7 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         if captureSession.canAddOutput(metadataOutput) {
             captureSession.addOutput(metadataOutput)
             metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
+<<<<<<< HEAD
             metadataOutput.metadataObjectTypes = [
                 .ean13,
                 .ean8,
@@ -1772,6 +1860,9 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                 .pdf417,
                 .qr
             ]
+=======
+            metadataOutput.metadataObjectTypes = [.ean13]
+>>>>>>> 3cdee79b2f34a087b51dbe179a2c309789a65550
         }
 
         previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
@@ -1806,12 +1897,16 @@ class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
 
         let soloNumeros = codigo.filter { $0.isNumber }
 
+<<<<<<< HEAD
         let longitud = soloNumeros.count
 
         guard longitud == 8 ||
               longitud == 12 ||
               longitud == 13 ||
               longitud == 14 else {
+=======
+        guard soloNumeros.count == 13 else {
+>>>>>>> 3cdee79b2f34a087b51dbe179a2c309789a65550
             return
         }
 
@@ -2020,12 +2115,22 @@ struct EditarProductoView: View {
 
     @Bindable var producto: ProductoAlimento
 
+<<<<<<< HEAD
     @State private var intentoGuardar = false
 
     let categorias = [
         "Frutas", "Verduras", "Lácteos",
         "Carnes", "Abarrotes", "Bebidas"
     ]
+=======
+    @State private var cantidadNumero = ""
+    @State private var unidadMedida = "Piezas"
+    @State private var intentoGuardar = false
+    @State private var cantidadTieneError = false
+
+    let categorias = ["Frutas", "Verduras", "Lácteos", "Carnes", "Abarrotes", "Bebidas"]
+    let unidades = ["Gramos", "Kilogramos", "Piezas", "Litros", "Mililitros", "Paquetes"]
+>>>>>>> 3cdee79b2f34a087b51dbe179a2c309789a65550
 
     var codigoValido: Bool {
         producto.codigoBarras.isEmpty || producto.codigoBarras.count == 13
@@ -2062,8 +2167,12 @@ struct EditarProductoView: View {
                         TextField("Nombre", text: $producto.nombre)
                             .textFieldStyle(.roundedBorder)
 
+<<<<<<< HEAD
                         if intentoGuardar &&
                             producto.nombre.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+=======
+                        if intentoGuardar && producto.nombre.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+>>>>>>> 3cdee79b2f34a087b51dbe179a2c309789a65550
                             Text("El nombre es obligatorio.")
                                 .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(.red)
@@ -2101,6 +2210,7 @@ struct EditarProductoView: View {
                         }
                     }
 
+<<<<<<< HEAD
                     VStack(alignment: .leading, spacing: 4) {
                         TextField("Cantidad", text: $producto.cantidad)
                             .textFieldStyle(.roundedBorder)
@@ -2112,6 +2222,10 @@ struct EditarProductoView: View {
                                 .foregroundColor(.red)
                         }
                     }
+=======
+                    TextField("Cantidad", text: $producto.cantidad)
+                        .textFieldStyle(.roundedBorder)
+>>>>>>> 3cdee79b2f34a087b51dbe179a2c309789a65550
 
                     DatePicker(
                         "Fecha de caducidad",
@@ -2142,7 +2256,10 @@ struct EditarProductoView: View {
 
                         producto.nombre = producto.nombre.trimmingCharacters(in: .whitespacesAndNewlines)
                         producto.categoria = categoriaNormalizada(producto.categoria)
+<<<<<<< HEAD
                         producto.cantidad = producto.cantidad.trimmingCharacters(in: .whitespacesAndNewlines)
+=======
+>>>>>>> 3cdee79b2f34a087b51dbe179a2c309789a65550
 
                         try? modelContext.save()
                         dismiss()
